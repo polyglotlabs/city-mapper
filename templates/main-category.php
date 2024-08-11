@@ -4,7 +4,7 @@
     <main id="main" class="site-main">
         <?php
         $main_category = get_query_var('main_category');
-        $city_mapper = City_Mapper::get_instance();
+        $city_mapper = new City_Mapper_Display();
         $city_mapper->display_main_category($main_category, 10, 'date', 'DESC');
         ?>
     </main>
