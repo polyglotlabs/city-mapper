@@ -27,7 +27,7 @@ class City_Mapper_CPT {
             'show_in_menu'       => true,
             'query_var'          => true,
             'rewrite'            => array(
-                'slug' => '%main_category%/%sub_category%', // Custom slug with placeholders
+                'slug' => '%main_category%/%sub_category%',
                 'with_front' => false
             ),
             'capability_type'    => 'post',

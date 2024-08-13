@@ -2,16 +2,27 @@
 
 class City_Mapper_Display {
     public function handle_custom_urls($template) {
-        $city_mapper_type = get_query_var('city_mapper_type');
+        $city_mapper_rule = get_query_var('city_mapper_rule');
         $main_category = get_query_var('main_category');
         $sub_category = get_query_var('sub_category');
-
-        if ($city_mapper_type === 'main') {
-            return $this->get_template('main-category.php');
-        } elseif ($city_mapper_type === 'sub') {
+        
+        if ($city_mapper_rule) {
+            switch ($city_mapper_rule) {
+                case 'main_category':
+                case 'main_category_paged':
+                    return $this->get_template('main-category.php');
+                case 'sub_category':
+                case 'sub_category_paged':
+                    return $this->get_template('sub-category.php');
+                case 'location':
+                    return $this->get_template('single-city_location.php');
+            }
+        } elseif ($main_category && $sub_category) {
             return $this->get_template('sub-category.php');
+        } elseif ($main_category) {
+            return $this->get_template('main-category.php');
         }
-
+        
         return $template;
     }
 
@@ -20,7 +31,7 @@ class City_Mapper_Display {
         if (file_exists($template_path)) {
             return $template_path;
         }
-        return get_page_template(); // Fallback to default page template
+        return get_single_template(); // Fallback to default single post template
     }
 
     public function display_main_category($category, $posts_per_page, $orderby, $order) {
@@ -39,7 +50,7 @@ class City_Mapper_Display {
                         'value' => $main_category->term_id,
                         'compare' => '='
                     )
-                )
+                ),
             ));
 
             if (!empty($sub_categories) && !is_wp_error($sub_categories)) {
@@ -67,6 +78,7 @@ class City_Mapper_Display {
 
         if ($main_category && $sub_category_term) {
             $output .= '<h2>' . esc_html($main_category->name) . ' - ' . esc_html($sub_category_term->name) . '</h2>';
+            $output .= $this->display_sub_categories_head($main_category->slug);
 
             $output .= $this->display_posts($category, $sub_category, $posts_per_page, $orderby, $order);
         }
@@ -75,11 +87,12 @@ class City_Mapper_Display {
     }
 
     private function display_posts($category, $sub_category, $posts_per_page, $orderby, $order) {
+        $paged = get_query_var('paged') ? get_query_var('paged') : 1;
+
         $args = array(
             'post_type' => 'city_location',
             'posts_per_page' => $posts_per_page,
-            'orderby' => $orderby,
-            'order' => $order,
+            'paged' => $paged,
             'tax_query' => array(
                 'relation' => 'AND',
                 array(
@@ -95,6 +108,19 @@ class City_Mapper_Display {
                 'taxonomy' => 'sub_category',
                 'field' => 'slug',
                 'terms' => $sub_category,
+            );
+        }
+
+        if ($orderby === 'date') {
+            $args['orderby'] = array(
+                'date' => $order,
+                'ID' => 'ASC'
+            );
+        } else {
+            $args['orderby'] = array(
+                $orderby => $order,
+                'date' => $order,
+                'ID' => 'ASC'
             );
         }
 
@@ -122,8 +148,8 @@ class City_Mapper_Display {
             $output .= '<div class="city-mapper-pagination">';
             $output .= paginate_links(array(
                 'base' => str_replace($big, '%#%', esc_url(get_pagenum_link($big))),
-                'format' => '?paged=%#%',
-                'current' => max(1, get_query_var('paged')),
+                'format' => 'page/%#%',
+                'current' => $paged,
                 'total' => $query->max_num_pages
             ));
             $output .= '</div>';
@@ -133,6 +159,28 @@ class City_Mapper_Display {
             $output .= '<p>No posts found.</p>';
         }
 
+        return $output;
+    }
+
+    public function display_sub_categories_head($main_category) {
+        $sub_categories = get_terms([
+            'taxonomy' => 'sub_category',
+            'hide_empty' => false,
+        ]);
+
+        $output = '';
+        if (!empty($sub_categories) && !is_wp_error($sub_categories)) {
+            $output .= '<ul class="sub-categories-head">';
+            foreach ($sub_categories as $sub_category) {
+                $main_cat_terms = get_term_meta($sub_category->term_id, 'main_category', true);
+                $main_cat_terms = get_term( $main_cat_terms )->slug;
+                if ($main_cat_terms && $main_cat_terms == $main_category) {
+                    $url = home_url("/{$main_category}/{$sub_category->slug}/");
+                    $output .= '<li><a href="' . esc_url($url) . '">' . esc_html($sub_category->name) . '</a></li>';
+                }
+            }
+            $output .= '</ul>';
+        }
         return $output;
     }
 }
