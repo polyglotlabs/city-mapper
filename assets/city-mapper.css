@@ -49,3 +49,37 @@ body .city-mapper-sub-category:hover, .city-mapper-sub-category.active {
   background: transparent;
   border-bottom: 2px solid #893B67;
 }
+
+body .city-mapper-pagination{
+  text-align: left;
+}
+.next.page-numbers, .prev.page-numbers{
+  display: inline-block;
+}
+.next.page-numbers:after, .prev.page-numbers:after{
+  width: 14px;
+  height: 25px;
+  display: block;
+  filter: invert(27%) sepia(68%) saturate(509%) hue-rotate(273deg) brightness(95%) contrast(91%);
+}
+.next.page-numbers:after{
+  content: url(icons/arrow-right-solid.svg);
+}
+.prev.page-numbers:after{
+  content: url(icons/arrow-left-solid.svg);
+}
+.page-numbers {
+  margin-right: 18px;
+}
+.page-numbers.current{
+  background-color: #893B67;
+  width: 27px;
+  display: inline-block;
+  text-align: center;
+  color: white;
+  border-radius: 50px;
+  opacity: .5;
+}
+.page-numbers.dots{
+  color: #893B67;
+}

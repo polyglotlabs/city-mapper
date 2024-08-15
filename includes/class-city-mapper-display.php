@@ -160,9 +160,11 @@ class City_Mapper_Display {
             $output .= '<div class="city-mapper-pagination">';
             $output .= paginate_links(array(
                 'base' => str_replace($big, '%#%', esc_url(get_pagenum_link($big))),
-                'format' => 'page/%#%',
+                'format' => '?paged=%#%',
                 'current' => $paged,
-                'total' => $query->max_num_pages
+                'total' => $query->max_num_pages,
+                'next_text' => (''),
+                'prev_text' => (''),
             ));
             $output .= '</div>';
 
@@ -179,16 +181,17 @@ class City_Mapper_Display {
             'taxonomy' => 'sub_category',
             'hide_empty' => false,
         ]);
-
+        $current_sub_category = get_query_var('sub_category');
         $output = '';
         if (!empty($sub_categories) && !is_wp_error($sub_categories)) {
             $output .= '<ul class="sub-categories-head">';
             foreach ($sub_categories as $sub_category) {
                 $main_cat_terms = get_term_meta($sub_category->term_id, 'main_category', true);
-                $main_cat_terms = get_term( $main_cat_terms )->slug;
-                if ($main_cat_terms && $main_cat_terms == $main_category) {
+                $main_cat_terms_slug = get_term( $main_cat_terms )->slug;
+                if ($main_cat_terms && $main_cat_terms_slug == $main_category) {
                     $url = home_url("/{$main_category}/{$sub_category->slug}/");
-                    $output .= '<li><a href="' . esc_url($url) . '">' . esc_html($sub_category->name) . '</a></li>';
+                    $active_class = ($current_sub_category == $sub_category->slug) ? ' class="active"' : '';
+                    $output .= '<li' . $active_class . '><a href="' . esc_url($url) . '">' . esc_html($sub_category->name) . '</a></li>';
                 }
             }
             $output .= '</ul>';
