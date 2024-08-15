@@ -128,17 +128,27 @@ class City_Mapper_Display {
 
         $output = '';
         if ($query->have_posts()) {
+
             $output .= '<div class="city-mapper-posts">';
             while ($query->have_posts()) {
                 $query->the_post();
                 $output .= '<div class="city-mapper-post">';
-                $output .= '<h3><a href="' . esc_url(get_permalink()) . '">' . get_the_title() . '</a></h3>';
+                $output .= '<a href="' . esc_url(get_permalink()) . '">';
                 if (has_post_thumbnail()) {
                     $output .= '<div class="city-mapper-thumbnail">';
                     $output .= get_the_post_thumbnail(null, 'thumbnail');
                     $output .= '</div>';
                 }
-                $output .= '<div class="city-mapper-excerpt">' . get_the_excerpt() . '</div>';
+                if (get_the_terms(get_the_ID(), 'sub_category')) {
+                    $output .= '<div class="city-mapper--sub-categories">';
+                    foreach (get_the_terms(get_the_ID(), 'sub_category') as $cat) {
+                        $output .= '' . $cat->name . '<span class="comma">,</span>';
+                    }
+                    $output .= '</div>';
+                }
+                $output .= '<h3><a href="' . esc_url(get_permalink()) . '">' . get_the_title() . '</a></h3>';
+                //$output .= '<div class="city-mapper-excerpt">' . get_the_excerpt() . '</div>';
+                $output .= '</a>';
                 $output .= '</div>';
             }
             $output .= '</div>';
