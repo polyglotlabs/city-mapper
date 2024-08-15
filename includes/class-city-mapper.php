@@ -111,6 +111,12 @@ class City_Mapper {
                 array(),
                 CITY_MAPPER_VERSION
             );
+            wp_enqueue_style(
+                'city-mapper',
+                CITY_MAPPER_PLUGIN_URL . 'assets/city-mapper.css',
+                array(),
+                CITY_MAPPER_VERSION
+            );
     }
 
     public static function activate() {
