@@ -13,7 +13,7 @@ class City_Mapper_Shortcode {
         $atts = shortcode_atts([
             'category' => '',
             'sub_category' => '',
-            'posts_per_page' => 10,
+            'posts_per_page' => 9,
             'orderby' => 'date',
             'order' => 'DESC'
         ], $atts, 'city_mapper');

@@ -136,8 +136,10 @@ class City_Mapper_Display {
                 $output .= '<a href="' . esc_url(get_permalink()) . '">';
                 if (has_post_thumbnail()) {
                     $output .= '<div class="city-mapper-thumbnail">';
-                    $output .= get_the_post_thumbnail(null, 'thumbnail');
+                    $output .= get_the_post_thumbnail(null, 'full');
                     $output .= '</div>';
+                }else{
+                    $output .= '<div class="city-mapper-bg"></div>';
                 }
                 if (get_the_terms(get_the_ID(), 'sub_category')) {
                     $output .= '<div class="city-mapper--sub-categories">';
@@ -146,7 +148,7 @@ class City_Mapper_Display {
                     }
                     $output .= '</div>';
                 }
-                $output .= '<h3><a href="' . esc_url(get_permalink()) . '">' . get_the_title() . '</a></h3>';
+                $output .= '<h3>' . get_the_title() . '</h3>';
                 //$output .= '<div class="city-mapper-excerpt">' . get_the_excerpt() . '</div>';
                 $output .= '</a>';
                 $output .= '</div>';

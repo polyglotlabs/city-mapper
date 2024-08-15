@@ -1,3 +1,51 @@
 .city-mapper--sub-categories .comma:last-child{
   display: none;
 }
+
+body .city-mapper-thumbnail img{
+  width: 100%;
+  max-width: 100%;
+  height: 300px;
+  display: block;
+  border-radius: 8px;
+  object-fit: cover;
+  object-position: top;
+}
+.city-mapper-bg{
+  width: 100%;
+  max-width: 100%;
+  height: 300px;
+  display: block;
+  border-radius: 8px;
+  background-color: #AFAFAF;
+}
+
+body .city-mapper-posts{
+  grid-template-columns: auto auto auto;
+  gap: 40px 20px;
+}
+.city-mapper--sub-categories{
+  color: #5E5650;
+  margin-top: 20px;
+}
+body .city-mapper-post h3{
+  font-size: 24px;
+  font-family: "Poppins", Sans-serif;
+}
+
+body .city-mapper-sub-categories{
+  justify-content: center;
+  padding-bottom: 0;
+}
+
+body a.city-mapper-sub-category {
+  color: #1B365D;
+  font-weight: bold;
+  background: transparent;
+  border-bottom: 2px solid transparent;
+  margin: 0px 4%;
+}
+body .city-mapper-sub-category:hover, .city-mapper-sub-category.active {
+  background: transparent;
+  border-bottom: 2px solid #893B67;
+}

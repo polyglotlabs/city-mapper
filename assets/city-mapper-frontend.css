@@ -5,9 +5,7 @@
 }
 
 .city-mapper-post {
-    border: 1px solid #ddd;
-    padding: 15px;
-    border-radius: 5px;
+    padding: 0px;
 }
 
 .city-mapper-thumbnail img {
