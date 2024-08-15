@@ -8,7 +8,7 @@ Step 3: Go to the City Mapper menu in the WordPress admin dashboard to import de
 Step 4: Create a new post and assign the "City Location" category to it.  
 Step 5: Use the shortcode [city_mapper] and its various parameters to display the city guide on your page.  
 
-## == Shortcode (PLANNED, not functional yet) ==  
+## == Shortcode ==  
 ### `[city_mapper]`: This will display a section with tabs and links to separate categories and sub-categories archive pages. 
 
 ### `[city_mapper category="" sub_category="" posts_per_page="" orderby="" order=""]`  
