@@ -83,3 +83,18 @@ body .city-mapper-pagination{
 .page-numbers.dots{
   color: #893B67;
 }
+
+@media screen and (max-width: 1024px){
+  body .city-mapper-posts {
+    grid-template-columns: auto auto;
+  }
+  .city-mapper-sub-categories{
+    flex-wrap: wrap;
+  }
+}
+
+@media screen and (max-width: 767px){
+  body .city-mapper-posts {
+    grid-template-columns: auto;
+  }
+}
