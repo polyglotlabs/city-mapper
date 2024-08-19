@@ -27,7 +27,7 @@ class City_Mapper_CPT {
             'show_in_menu'       => true,
             'query_var'          => true,
             'rewrite'            => array(
-                'slug' => '%associated_page%/%sub_category%',
+                'slug' => '%main_category%/%sub_category%',
                 'with_front' => false
             ),
             'capability_type'    => 'post',
@@ -42,22 +42,42 @@ class City_Mapper_CPT {
 
     public function custom_post_type_link($post_link, $post) {
         if ($post->post_type === 'city_location') {
-            $sub_category = wp_get_post_terms($post->ID, 'sub_category');
-            
-            if ($sub_category && !is_wp_error($sub_category)) {
-                $sub_slug = $sub_category[0]->slug;
-                $main_category_id = get_term_meta($sub_category[0]->term_id, 'main_category', true);
-                
+            $sub_categories = wp_get_post_terms($post->ID, 'sub_category');
+            if ($sub_categories && !is_wp_error($sub_categories)) {
+                $sub_category = $sub_categories[0];
+                $main_category_id = get_term_meta($sub_category->term_id, 'main_category', true);
                 if ($main_category_id) {
                     $main_category = get_post($main_category_id);
                     if ($main_category && $main_category->post_type == 'page') {
-                        $associated_page_slug = $main_category->post_name;
-                        $post_link = str_replace('%associated_page%', $associated_page_slug, $post_link);
-                        $post_link = str_replace('%sub_category%', $sub_slug, $post_link);
+                        $post_link = str_replace('%main_category%', $main_category->post_name, $post_link);
+                        $post_link = str_replace('%sub_category%', $sub_category->slug, $post_link);
                     }
                 }
             }
         }
         return $post_link;
+    }
+
+    public function save_post_taxonomies($post_id) {
+        // Check if this is an autosave
+        if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+            return;
+        }
+
+        // Check the post type
+        if (get_post_type($post_id) !== 'city_location') {
+            return;
+        }
+
+        // Check user permissions
+        if (!current_user_can('edit_post', $post_id)) {
+            return;
+        }
+
+        // Save sub_category
+        if (isset($_POST['tax_input']['sub_category'])) {
+            $sub_categories = array_map('intval', $_POST['tax_input']['sub_category']);
+            wp_set_object_terms($post_id, $sub_categories, 'sub_category');
+        }
     }
 }

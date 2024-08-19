@@ -84,6 +84,21 @@ body .city-mapper-pagination{
   color: #893B67;
 }
 
+.city-mapper-sorting {
+    margin-bottom: 20px;
+    text-align: right;
+}
+
+.city-mapper-sorting label {
+    margin-right: 10px;
+}
+
+.city-mapper-sorting select {
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
 @media screen and (max-width: 1024px){
   body .city-mapper-posts {
     grid-template-columns: auto auto;

@@ -22,18 +22,28 @@ class City_Mapper_Shortcode {
 
         $main_category = get_query_var('main_category') ?: $atts['category'];
         $sub_category = get_query_var('sub_category') ?: $atts['sub_category'];
+        $orderby = isset($_GET['orderby']) ? sanitize_text_field($_GET['orderby']) : $atts['orderby'];
+        $order = isset($_GET['order']) ? sanitize_text_field($_GET['order']) : $atts['order'];
+
+        // Reset paged to 1 if sorting has changed
+        $paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
+        if (isset($_GET['orderby']) || isset($_GET['order'])) {
+            $paged = 1;
+        }
 
         echo '<div class="city-mapper-container">';
         
         // Display sub-categories
         $this->display_sub_categories($main_category, $sub_category);
 
+        // Display sorting dropdown
+        $this->display_sorting_dropdown($orderby, $order);
+
         // Display content
-        
         if ($sub_category) {
-            $this->display->display_sub_category($main_category, $sub_category, $atts['posts_per_page'], $atts['orderby'], $atts['order']);
+            $this->display->display_sub_category($main_category, $sub_category, $atts['posts_per_page'], $orderby, $order, $paged);
         } else {
-            $this->display->display_main_category($main_category, $atts['posts_per_page'], $atts['orderby'], $atts['order']);
+            $this->display->display_main_category($main_category, $atts['posts_per_page'], $orderby, $order, $paged);
         }
 
         echo '</div>';
@@ -81,5 +91,42 @@ class City_Mapper_Shortcode {
             }
             echo '</div>';
         }
+    }
+
+    private function display_sorting_dropdown($current_orderby, $current_order) {
+        $options = [
+            'date_DESC' => 'Latest',
+            'date_ASC' => 'Oldest',
+            'title_ASC' => 'Name (A-Z)',
+            'title_DESC' => 'Name (Z-A)',
+        ];
+
+        echo '<div class="city-mapper-sorting">';
+        echo '<label for="city-mapper-sort">Sort By: </label>';
+        echo '<select id="city-mapper-sort" onchange="cityMapperSort(this.value)">';
+        
+        foreach ($options as $value => $label) {
+            list($orderby, $order) = explode('_', $value);
+            $selected = ($orderby === $current_orderby && $order === $current_order) ? ' selected' : '';
+            echo "<option value=\"{$value}\"{$selected}>{$label}</option>";
+        }
+        
+        echo '</select>';
+        echo '</div>';
+
+        // Add JavaScript for sorting
+        ?>
+        <script>
+        function cityMapperSort(value) {
+            const [orderby, order] = value.split('_');
+            const url = new URL(window.location);
+            url.searchParams.set('orderby', orderby);
+            url.searchParams.set('order', order);
+            console.log(url.searchParams); 
+            url.searchParams.delete('paged'); // Remove the 'paged' parameter
+            window.location.href = url.toString();
+        }
+        </script>
+        <?php
     }
 }

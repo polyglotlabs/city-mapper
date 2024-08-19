@@ -60,6 +60,8 @@ class City_Mapper {
         foreach ($taxonomy_hooks as $hook => $method) {
             add_action($hook, [$this->taxonomies, $method], 10, 2);
         }
+
+        add_action('save_post_city_location', [$this->cpt, 'save_post_taxonomies']);
     }
 
     public function add_rewrite_rules() {

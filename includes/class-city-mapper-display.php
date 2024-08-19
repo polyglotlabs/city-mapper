@@ -69,7 +69,10 @@ class City_Mapper_Display {
         }
 
         // Add ordering
-        if ($orderby === 'date') {
+        if ($orderby === 'title') {
+            $args['orderby'] = 'title';
+            $args['order'] = $order;
+        } elseif ($orderby === 'date') {
             $args['orderby'] = array(
                 'date' => $order,
                 'ID' => 'ASC'
