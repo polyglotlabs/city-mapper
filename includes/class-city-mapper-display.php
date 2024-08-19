@@ -1,30 +1,7 @@
 <?php
 
 class City_Mapper_Display {
-    public function handle_custom_urls($template) {
-        $city_mapper_rule = get_query_var('city_mapper_rule');
-        $main_category = get_query_var('main_category');
-        $sub_category = get_query_var('sub_category');
-        
-        if ($city_mapper_rule) {
-            switch ($city_mapper_rule) {
-                case 'main_category':
-                case 'main_category_paged':
-                    return $this->get_template('main-category.php');
-                case 'sub_category':
-                case 'sub_category_paged':
-                    return $this->get_template('sub-category.php');
-                case 'location':
-                    return $this->get_template('single-city_location.php');
-            }
-        } elseif ($main_category && $sub_category) {
-            return $this->get_template('sub-category.php');
-        } elseif ($main_category) {
-            return $this->get_template('main-category.php');
-        }
-        
-        return $template;
-    }
+   
 
     private function get_template($template_name) {
         $template_path = CITY_MAPPER_PLUGIN_DIR . 'templates/' . $template_name;
@@ -35,52 +12,38 @@ class City_Mapper_Display {
     }
 
     public function display_main_category($category, $posts_per_page, $orderby, $order) {
-        $main_category = get_term_by('slug', $category, 'main_category');
+        $main_category = get_query_var('main_category') ?: $category;
+        $sub_category = get_query_var('sub_category');
         $output = '';
 
         if ($main_category) {
-            $output .= '<h2>' . esc_html($main_category->name) . '</h2>';
+            $output .= '<h2>' . esc_html($main_category) . '</h2>';
+            $output .= $this->display_sub_categories_head($main_category);
 
-            $sub_categories = get_terms(array(
-                'taxonomy' => 'sub_category',
-                'hide_empty' => false,
-                'meta_query' => array(
-                    array(
-                        'key' => 'main_category',
-                        'value' => $main_category->term_id,
-                        'compare' => '='
-                    )
-                ),
-            ));
-
-            if (!empty($sub_categories) && !is_wp_error($sub_categories)) {
-                $output .= '<div class="city-mapper-sub-categories">';
-                foreach ($sub_categories as $sub_category) {
-                    $output .= sprintf(
-                        '<a href="%s" class="city-mapper-sub-category">%s</a>',
-                        esc_url(get_term_link($sub_category)),
-                        esc_html($sub_category->name)
-                    );
+            if ($sub_category) {
+                $sub_category_term = get_term_by('slug', $sub_category, 'sub_category');
+                if ($sub_category_term) {
+                    $output .= '<h3>' . esc_html($sub_category_term->name) . '</h3>';
                 }
-                $output .= '</div>';
+                $output .= $this->display_posts($main_category, $sub_category, $posts_per_page, $orderby, $order);
+            } else {
+                $output .= $this->display_posts($main_category, '', $posts_per_page, $orderby, $order);
             }
-
-            $output .= $this->display_posts($category, '', $posts_per_page, $orderby, $order);
         }
 
         echo $output;
     }
 
     public function display_sub_category($category, $sub_category, $posts_per_page, $orderby, $order) {
-        $main_category = get_term_by('slug', $category, 'main_category');
+        $main_category = get_query_var('main_category') ?: $category;
         $sub_category_term = get_term_by('slug', $sub_category, 'sub_category');
         $output = '';
-
+        
         if ($main_category && $sub_category_term) {
-            $output .= '<h2>' . esc_html($main_category->name) . ' - ' . esc_html($sub_category_term->name) . '</h2>';
-            $output .= $this->display_sub_categories_head($main_category->slug);
+            $output .= '<h2>' . esc_html($main_category) . ' - ' . esc_html($sub_category_term->name) . '</h2>';
+            $output .= $this->display_sub_categories_head($main_category);
 
-            $output .= $this->display_posts($category, $sub_category, $posts_per_page, $orderby, $order);
+            $output .= $this->display_posts($main_category, $sub_category, $posts_per_page, $orderby, $order);
         }
 
         echo $output;
@@ -93,24 +56,19 @@ class City_Mapper_Display {
             'post_type' => 'city_location',
             'posts_per_page' => $posts_per_page,
             'paged' => $paged,
-            'tax_query' => array(
-                'relation' => 'AND',
-                array(
-                    'taxonomy' => 'main_category',
-                    'field' => 'slug',
-                    'terms' => $category,
-                ),
-            ),
         );
 
         if (!empty($sub_category)) {
-            $args['tax_query'][] = array(
-                'taxonomy' => 'sub_category',
-                'field' => 'slug',
-                'terms' => $sub_category,
+            $args['tax_query'] = array(
+                array(
+                    'taxonomy' => 'sub_category',
+                    'field' => 'slug',
+                    'terms' => $sub_category,
+                ),
             );
         }
 
+        // Add ordering
         if ($orderby === 'date') {
             $args['orderby'] = array(
                 'date' => $order,
@@ -187,8 +145,8 @@ class City_Mapper_Display {
             $output .= '<ul class="sub-categories-head">';
             foreach ($sub_categories as $sub_category) {
                 $main_cat_terms = get_term_meta($sub_category->term_id, 'main_category', true);
-                $main_cat_terms_slug = get_term( $main_cat_terms )->slug;
-                if ($main_cat_terms && $main_cat_terms_slug == $main_category) {
+                $main_cat_term = get_term($main_cat_terms);
+                if (!is_wp_error($main_cat_term) && $main_cat_term && $main_cat_term->slug == $main_category) {
                     $url = home_url("/{$main_category}/{$sub_category->slug}/");
                     $active_class = ($current_sub_category == $sub_category->slug) ? ' class="active"' : '';
                     $output .= '<li' . $active_class . '><a href="' . esc_url($url) . '">' . esc_html($sub_category->name) . '</a></li>';

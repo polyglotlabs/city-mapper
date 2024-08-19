@@ -27,7 +27,7 @@ class City_Mapper_CPT {
             'show_in_menu'       => true,
             'query_var'          => true,
             'rewrite'            => array(
-                'slug' => '%main_category%/%sub_category%',
+                'slug' => '%associated_page%/%sub_category%',
                 'with_front' => false
             ),
             'capability_type'    => 'post',
@@ -42,17 +42,20 @@ class City_Mapper_CPT {
 
     public function custom_post_type_link($post_link, $post) {
         if ($post->post_type === 'city_location') {
-            $main_category = wp_get_post_terms($post->ID, 'main_category');
             $sub_category = wp_get_post_terms($post->ID, 'sub_category');
-            
-            if ($main_category && !is_wp_error($main_category)) {
-                $main_slug = $main_category[0]->slug;
-                $post_link = str_replace('%main_category%', $main_slug, $post_link);
-            }
             
             if ($sub_category && !is_wp_error($sub_category)) {
                 $sub_slug = $sub_category[0]->slug;
-                $post_link = str_replace('%sub_category%', $sub_slug, $post_link);
+                $main_category_id = get_term_meta($sub_category[0]->term_id, 'main_category', true);
+                
+                if ($main_category_id) {
+                    $main_category = get_post($main_category_id);
+                    if ($main_category && $main_category->post_type == 'page') {
+                        $associated_page_slug = $main_category->post_name;
+                        $post_link = str_replace('%associated_page%', $associated_page_slug, $post_link);
+                        $post_link = str_replace('%sub_category%', $sub_slug, $post_link);
+                    }
+                }
             }
         }
         return $post_link;

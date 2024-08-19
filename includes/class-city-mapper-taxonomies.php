@@ -2,9 +2,6 @@
 
 class City_Mapper_Taxonomies {
     public function register_taxonomies() {
-        // Main Category Taxonomy
-        $this->register_taxonomy('main_category', 'Main Category', 'Main Categories');
-
         // Sub Category Taxonomy
         $this->register_taxonomy('sub_category', 'Sub Category', 'Sub Categories', [
             'meta_box_cb' => [$this, 'sub_category_meta_box']
@@ -13,12 +10,13 @@ class City_Mapper_Taxonomies {
 
     private function register_taxonomy($taxonomy, $singular, $plural, $additional_args = []) {
         $args = array_merge([
+            'has_archive'       => false,
             'hierarchical'      => false,
             'labels'            => $this->get_taxonomy_labels($singular, $plural),
             'show_ui'           => true,
             'show_admin_column' => true,
             'query_var'         => true,
-            'rewrite'           => ['slug' => strtolower(str_replace('_', '-', $taxonomy))]
+            'rewrite'           => false,
         ], $additional_args);
 
         register_taxonomy($taxonomy, ['city_location'], $args);
@@ -41,19 +39,11 @@ class City_Mapper_Taxonomies {
     }
 
     public function custom_term_link($termlink, $term, $taxonomy) {
-        if ($taxonomy === 'main_category') {
-            return home_url($term->slug . '/');
-        } elseif ($taxonomy === 'sub_category') {
-            // Get all associated main categories
-            $main_categories = get_terms(array(
-                'taxonomy' => 'main_category',
-                'object_ids' => get_objects_in_term($term->term_id, 'sub_category'),
-                'fields' => 'slugs',
-            ));
-
-            if (!empty($main_categories) && !is_wp_error($main_categories)) {
-                // Use the first associated main category
-                return home_url($main_categories[0] . '/' . $term->slug . '/');
+        if ($taxonomy === 'sub_category') {
+            $main_category_id = get_term_meta($term->term_id, 'main_category', true);
+            $main_category = get_post($main_category_id);
+            if ($main_category) {
+                return home_url($main_category->post_name . '/' . $term->slug . '/');
             }
         }
         return $termlink;
@@ -67,8 +57,12 @@ class City_Mapper_Taxonomies {
                 <ul id="<?php echo $tax_name; ?>checklist" class="categorychecklist form-no-clear">
                     <?php 
                     $terms = get_terms(['taxonomy' => $tax_name, 'hide_empty' => false]);
-                    foreach ($terms as $term) {
-                        $this->render_sub_category_checkbox($term, $tax_name, $post->ID);
+                    if (!empty($terms) && !is_wp_error($terms)) {
+                        foreach ($terms as $term) {
+                            $this->render_sub_category_checkbox($term, $tax_name, $post->ID);
+                        }
+                    } else {
+                        echo '<li>No sub-categories found.</li>';
                     }
                     ?>
                 </ul>
@@ -79,8 +73,15 @@ class City_Mapper_Taxonomies {
 
     private function render_sub_category_checkbox($term, $tax_name, $post_id) {
         $main_category_id = get_term_meta($term->term_id, 'main_category', true);
-        $main_category = get_term($main_category_id, 'main_category');
-        $main_category_name = $main_category ? $main_category->name : 'Uncategorized';
+        $main_category_name = 'Uncategorized';
+        
+        if ($main_category_id) {
+            $main_category = get_post($main_category_id);
+            if ($main_category && $main_category->post_type == 'page') {
+                $main_category_name = $main_category->post_title;
+            }
+        }
+        
         ?>
         <li id="<?php echo $tax_name; ?>-<?php echo $term->term_id; ?>">
             <label class="selectit">
@@ -88,7 +89,10 @@ class City_Mapper_Taxonomies {
                        id="in-<?php echo $tax_name; ?>-<?php echo $term->term_id; ?>" 
                        value="<?php echo $term->term_id; ?>"
                        <?php checked(has_term($term->term_id, $tax_name, $post_id)); ?>>
-                <?php echo esc_html($term->name) . ' (' . esc_html($main_category_name) . ')'; ?>
+                <?php echo esc_html($term->name); ?>
+                <?php if ($main_category_name !== 'Uncategorized'): ?>
+                    <span class="main-category-name">(<?php echo esc_html($main_category_name); ?>)</span>
+                <?php endif; ?>
             </label>
         </li>
         <?php
@@ -103,17 +107,17 @@ class City_Mapper_Taxonomies {
     public function add_main_category_field($taxonomy) {
         ?>
         <div class="form-field term-main-category-wrap">
-            <label for="main-category"><?php _e('Main Category', 'city-mapper'); ?></label>
+            <label for="main-category"><?php _e('Main Category Page', 'city-mapper'); ?></label>
             <select name="main_category" id="main-category">
-                <option value=""><?php _e('Select Main Category', 'city-mapper'); ?></option>
+                <option value=""><?php _e('Select Main Category Page', 'city-mapper'); ?></option>
                 <?php
-                $main_categories = get_terms(array('taxonomy' => 'main_category', 'hide_empty' => false));
-                foreach ($main_categories as $main_category) {
-                    echo '<option value="' . esc_attr($main_category->term_id) . '">' . esc_html($main_category->name) . '</option>';
+                $pages = get_pages();
+                foreach ($pages as $page) {
+                    echo '<option value="' . esc_attr($page->ID) . '">' . esc_html($page->post_title) . '</option>';
                 }
                 ?>
             </select>
-            <p><?php _e('Select the Main Category this Sub Category belongs to.', 'city-mapper'); ?></p>
+            <p><?php _e('Select the Page that represents the Main Category. Each Main Category must be associated with its own unique page.', 'city-mapper'); ?></p>
         </div>
         <?php
     }
@@ -122,18 +126,18 @@ class City_Mapper_Taxonomies {
         $main_category_id = get_term_meta($term->term_id, 'main_category', true);
         ?>
         <tr class="form-field term-main-category-wrap">
-            <th scope="row"><label for="main-category"><?php _e('Main Category', 'city-mapper'); ?></label></th>
+            <th scope="row"><label for="main-category"><?php _e('Main Category Page', 'city-mapper'); ?></label></th>
             <td>
                 <select name="main_category" id="main-category">
-                    <option value=""><?php _e('Select Main Category', 'city-mapper'); ?></option>
+                    <option value=""><?php _e('Select Main Category Page', 'city-mapper'); ?></option>
                     <?php
-                    $main_categories = get_terms(array('taxonomy' => 'main_category', 'hide_empty' => false));
-                    foreach ($main_categories as $main_category) {
-                        echo '<option value="' . esc_attr($main_category->term_id) . '"' . selected($main_category_id, $main_category->term_id, false) . '>' . esc_html($main_category->name) . '</option>';
+                    $pages = get_pages();
+                    foreach ($pages as $page) {
+                        echo '<option value="' . esc_attr($page->ID) . '"' . selected($main_category_id, $page->ID, false) . '>' . esc_html($page->post_title) . '</option>';
                     }
                     ?>
                 </select>
-                <p class="description"><?php _e('Select the Main Category this Sub Category belongs to.', 'city-mapper'); ?></p>
+                <p class="description"><?php _e('Select the Page that represents the Main Category. Each Main Category must be associated with its own unique page.', 'city-mapper'); ?></p>
             </td>
         </tr>
         <?php

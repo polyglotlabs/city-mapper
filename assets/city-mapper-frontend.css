@@ -13,29 +13,54 @@
     height: auto;
 }
 
-.city-mapper-sub-categories {
+.city-mapper-tabs {
     display: flex;
-    flex-wrap: nowrap;
-    overflow-x: auto;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: 10px;
     margin-bottom: 20px;
     padding: 10px 0;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 2px solid #e0e0e0;
 }
 
-.city-mapper-sub-category {
-    padding: 8px 15px;
-    background-color: #f0f0f0;
+.city-mapper-tab {
+    padding: 10px 20px;
+    background-color: #f8f8f8;
     border-radius: 5px 5px 0 0;
     text-decoration: none;
     color: #333;
-    white-space: nowrap;
-    transition: background-color 0.3s ease;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    border-bottom: none;
 }
 
-.city-mapper-sub-category:hover,
-.city-mapper-sub-category.active {
-    background-color: #e0e0e0;
+.city-mapper-tab:hover,
+.city-mapper-tab.active {
+    background-color: #fff;
+    color: #1a1a1a;
+    border-color: #e0e0e0;
+    border-bottom: 2px solid #fff;
+    margin-bottom: -2px;
+}
+
+@media (max-width: 768px) {
+    .city-mapper-tabs {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .city-mapper-tab {
+        border-radius: 5px;
+        border: 2px solid #e0e0e0;
+        margin-bottom: 5px;
+    }
+
+    .city-mapper-tab:hover,
+    .city-mapper-tab.active {
+        border-bottom: 2px solid #e0e0e0;
+        margin-bottom: 5px;
+    }
 }
 
 .city-mapper-pagination {

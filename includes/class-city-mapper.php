@@ -10,6 +10,7 @@ class City_Mapper {
     public function __construct() {
         // grimacing
         add_action('wp_enqueue_scripts', array($this, 'enqueue_frontend_styles'));
+        add_action('init', array($this, 'add_rewrite_tags'));
     }
 
     public function run() {
@@ -32,19 +33,22 @@ class City_Mapper {
     private function define_hooks() {
         add_action('init', [$this->cpt, 'register_cpt']);
         add_action('init', [$this->taxonomies, 'register_taxonomies']);
-        add_action('init', [$this, 'custom_rewrite_rules']);
+        add_action('init', [$this, 'add_rewrite_rules']);
         add_filter('query_vars', [$this, 'add_query_vars']);
 
         add_filter('post_type_link', [$this->cpt, 'custom_post_type_link'], 10, 2);
         add_filter('term_link', [$this->taxonomies, 'custom_term_link'], 10, 3);
 
-        add_filter('template_include', [$this->display, 'handle_custom_urls']);
+        add_filter('template_include', [$this, 'handle_custom_urls']);
         add_shortcode('city_mapper', [$this->shortcode, 'city_mapper_shortcode']);
 
         add_action('admin_menu', [$this->admin, 'add_admin_menu']);
         add_action('admin_enqueue_scripts', [$this->admin, 'enqueue_admin_scripts']);
         add_action('wp_ajax_city_mapper_create_defaults', [$this->admin, 'import_defaults']);
         add_action('wp_ajax_city_mapper_delete_defaults', [$this->admin, 'delete_defaults']);
+
+        add_action('wp', [$this, 'log_matched_rule']);
+        add_filter('generate_rewrite_rules', [$this, 'log_rewrite_rules']);
 
         $taxonomy_hooks = [
             'created_sub_category' => 'save_sub_category_main_category',
@@ -58,49 +62,71 @@ class City_Mapper {
         }
     }
 
-    public function custom_rewrite_rules() {
-        $rules = [
-            '^([^/]+)/([^/]+)/([^/]+)/?$' => 'index.php?post_type=city_location&main_category=$matches[1]&sub_category=$matches[2]&city_location=$matches[3]&city_mapper_rule=location',
-            '^([^/]+)/([^/]+)/?$' => 'index.php?main_category=$matches[1]&sub_category=$matches[2]&city_mapper_rule=sub_category',
-            '^([^/]+)/([^/]+)/page/([0-9]+)/?$' => 'index.php?main_category=$matches[1]&sub_category=$matches[2]&paged=$matches[3]&city_mapper_rule=sub_category_paged',
-            '^([^/]+)/page/([0-9]+)/?$' => 'index.php?main_category=$matches[1]&paged=$matches[2]&city_mapper_rule=main_category_paged',
-            '^([^/]+)/?$' => 'index.php?main_category=$matches[1]&city_mapper_rule=main_category'
-        ];
+    public function add_rewrite_rules() {
+        // Rule for single city location
+        add_rewrite_rule(
+            '^(gather|eat|explore|stay)/([^/]+)/([^/]+)/?$',
+            'index.php?pagename=$matches[1]&sub_category=$matches[2]&city_location=$matches[3]',
+            1
+        );
 
-        foreach ($rules as $regex => $query) {
-            add_rewrite_rule($regex, $query, 'top');
-        }
+        // Rule for sub-category with pagination
+        add_rewrite_rule(
+            '^(gather|eat|explore|stay)/([^/]+)/page/([0-9]+)/?$',
+            'index.php?pagename=$matches[1]&sub_category=$matches[2]&paged=$matches[3]',
+            1
+        );
+
+        // Rule for sub-category without pagination
+        add_rewrite_rule(
+            '^(gather|eat|explore|stay)/([^/]+)/?$',
+            'index.php?pagename=$matches[1]&sub_category=$matches[2]',
+            1
+        );
+
+        // Rule for main category with pagination
+        add_rewrite_rule(
+            '^(gather|eat|explore|stay)/page/([0-9]+)/?$',
+            'index.php?pagename=$matches[1]&paged=$matches[2]',
+            1
+        );
+
+        // Rule for main category without pagination
+        add_rewrite_rule(
+            '^(gather|eat|explore|stay)/?$',
+            'index.php?pagename=$matches[1]',
+            1
+        );
     }
 
     public function add_query_vars($vars) {
-        $new_vars = ['city_mapper_type', 'main_category', 'sub_category', 'paged', 'city_mapper_rule'];
-        $vars = array_merge($vars, $new_vars);
-        
-        return $vars;
+        $new_vars = ['main_category', 'sub_category', 'city_location', 'paged'];
+        return array_merge($vars, $new_vars);
+    }
+
+    public function add_rewrite_tags() {
+        add_rewrite_tag('%main_category%', '([^&]+)');
+        add_rewrite_tag('%sub_category%', '([^&]+)');
+        add_rewrite_tag('%city_location%', '([^&]+)');
     }
 
     public function handle_custom_urls($template) {
-        $city_mapper_rule = get_query_var('city_mapper_rule');
+        global $wp_query;
+
         $main_category = get_query_var('main_category');
         $sub_category = get_query_var('sub_category');
-        
-        if ($city_mapper_rule) {
-            switch ($city_mapper_rule) {
-                case 'main_category':
-                case 'main_category_paged':
-                    return CITY_MAPPER_PLUGIN_DIR . 'templates/main-category.php';
-                case 'sub_category':
-                case 'sub_category_paged':
-                    return CITY_MAPPER_PLUGIN_DIR . 'templates/sub-category.php';
-                case 'location':
+        $city_location = get_query_var('city_location');
+
+        if ($main_category) {
+            if ($sub_category) {
+                if ($city_location) {
                     return CITY_MAPPER_PLUGIN_DIR . 'templates/single-city_location.php';
+                }
+                return CITY_MAPPER_PLUGIN_DIR . 'templates/sub-category.php';
             }
-        } elseif ($main_category && $sub_category) {
-            return CITY_MAPPER_PLUGIN_DIR . 'templates/sub-category.php';
-        } elseif ($main_category) {
             return CITY_MAPPER_PLUGIN_DIR . 'templates/main-category.php';
         }
-        
+
         return $template;
     }
 
@@ -125,5 +151,17 @@ class City_Mapper {
 
     public static function deactivate() {
         flush_rewrite_rules();
+    }
+    public function log_rewrite_rules($wp_rewrite) {
+        return $wp_rewrite;
+    }
+
+    public function log_matched_rule() {
+        global $wp, $wp_rewrite;
+        $matched_rule = $wp->matched_rule;
+        $matched_query = $wp->matched_query;
+        $request = $wp->request;
+
+
     }
 }

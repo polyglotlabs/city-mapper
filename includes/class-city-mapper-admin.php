@@ -80,12 +80,25 @@ class City_Mapper_Admin {
 
     private function import_default_terms() {
         foreach ($this->main_categories as $main_category => $sub_categories) {
-            $main_term = wp_insert_term($main_category, 'main_category');
-            if (!is_wp_error($main_term)) {
+            // Check if a page with the main category name already exists
+            $existing_page = get_page_by_path(sanitize_title($main_category));
+            
+            if ($existing_page) {
+                $main_page = $existing_page->ID;
+            } else {
+                $main_page = wp_insert_post([
+                    'post_title' => $main_category,
+                    'post_content' => '',
+                    'post_status' => 'publish',
+                    'post_type' => 'page'
+                ]);
+            }
+
+            if (!is_wp_error($main_page)) {
                 foreach ($sub_categories as $sub_category) {
                     $sub_term = wp_insert_term($sub_category, 'sub_category');
                     if (!is_wp_error($sub_term)) {
-                        update_term_meta($sub_term['term_id'], 'main_category', $main_term['term_id']);
+                        update_term_meta($sub_term['term_id'], 'main_category', $main_page);
                     }
                 }
             }
