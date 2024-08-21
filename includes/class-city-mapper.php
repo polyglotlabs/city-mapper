@@ -172,8 +172,8 @@ class City_Mapper {
         $matched_rule = $wp->matched_rule;
         $matched_query = $wp->matched_query;
         $request = $wp->request;
-        print_r($matched_rule);
-        print_r($matched_query);
-        print_r($request);
+        // print_r($matched_rule);
+        // print_r($matched_query);
+        // print_r($request);
     }
 }
