@@ -60,11 +60,16 @@ class City_Mapper {
         foreach ($taxonomy_hooks as $hook => $method) {
             add_action($hook, [$this->taxonomies, $method], 10, 2);
         }
-
-        add_action('save_post_city_location', [$this->cpt, 'save_post_taxonomies']);
     }
 
     public function add_rewrite_rules() {
+        // Rule for category with pagination
+        add_rewrite_rule(
+            '^(gather|eat|explore|stay)/page/([0-9]+)/?$',
+            'index.php?pagename=$matches[1]&paged=$matches[2]',
+            0
+        );
+        
         // Rule for single city location
         add_rewrite_rule(
             '^(gather|eat|explore|stay)/([^/]+)/([^/]+)/?$',
@@ -72,6 +77,14 @@ class City_Mapper {
             1
         );
 
+        add_rewrite_rule(
+            '^(gather|eat|explore|stay)/?$',
+            'index.php?pagename=$matches[1]',
+            'top'
+        );
+
+        
+        
         // Rule for sub-category with pagination
         add_rewrite_rule(
             '^(gather|eat|explore|stay)/([^/]+)/page/([0-9]+)/?$',
@@ -85,20 +98,16 @@ class City_Mapper {
             'index.php?pagename=$matches[1]&sub_category=$matches[2]',
             1
         );
-
-        // Rule for main category with pagination
         add_rewrite_rule(
-            '^(gather|eat|explore|stay)/page/([0-9]+)/?$',
-            'index.php?pagename=$matches[1]&paged=$matches[2]',
-            1
+            '^(gather|eat|explore|stay)/([^/]+)/page/([0-9]+)/?$',
+            'index.php?pagename=$matches[1]&sub_category=$matches[2]&paged=$matches[3]',
+            'top'
         );
+       
 
-        // Rule for main category without pagination
-        add_rewrite_rule(
-            '^(gather|eat|explore|stay)/?$',
-            'index.php?pagename=$matches[1]',
-            1
-        );
+        
+        
+        
     }
 
     public function add_query_vars($vars) {
@@ -163,7 +172,6 @@ class City_Mapper {
         $matched_rule = $wp->matched_rule;
         $matched_query = $wp->matched_query;
         $request = $wp->request;
-
 
     }
 }

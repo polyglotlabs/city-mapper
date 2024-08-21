@@ -3,15 +3,13 @@
 class City_Mapper_Taxonomies {
     public function register_taxonomies() {
         // Sub Category Taxonomy
-        $this->register_taxonomy('sub_category', 'Sub Category', 'Sub Categories', [
-            'meta_box_cb' => [$this, 'sub_category_meta_box']
-        ]);
+        $this->register_taxonomy('sub_category', 'Sub Category', 'Sub Categories', [ ]);
     }
 
     private function register_taxonomy($taxonomy, $singular, $plural, $additional_args = []) {
         $args = array_merge([
             'has_archive'       => false,
-            'hierarchical'      => false,
+            'hierarchical'      => true,
             'labels'            => $this->get_taxonomy_labels($singular, $plural),
             'show_ui'           => true,
             'show_admin_column' => true,

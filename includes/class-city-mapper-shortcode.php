@@ -40,6 +40,8 @@ class City_Mapper_Shortcode {
         $this->display_sorting_dropdown($orderby, $order);
 
         // Display content
+   
+
         if ($sub_category) {
             $this->display->display_sub_category($main_category, $sub_category, $atts['posts_per_page'], $orderby, $order, $paged);
         } else {
@@ -79,21 +81,32 @@ class City_Mapper_Shortcode {
 
         if (!empty($sub_categories) && !is_wp_error($sub_categories)) {
             echo '<div class="city-mapper-tabs">';
+            $first_sub_category = true;
+            $active_set = false;
             foreach ($sub_categories as $sub_category) {
+
+                if($current_sub_category == "" && !$active_set) {
+                    $active_class = " active"; 
+                    $active_set = true; 
+                } else {
+                    $active_class = ""; 
+                }
+                
                 $url = home_url("/{$main_category}/{$sub_category->slug}/");
-                $active_class = ($current_sub_category === $sub_category->slug) ? ' active' : '';
                 printf(
                     '<a href="%s" class="city-mapper-tab%s">%s</a>',
                     esc_url($url),
                     esc_attr($active_class),
                     esc_html($sub_category->name)
                 );
+                $active_class = ""; 
             }
+
             echo '</div>';
         }
     }
 
-    private function display_sorting_dropdown($current_orderby, $current_order) {
+    private function display_sorting_dropdown($orderby, $order) {
         $options = [
             'date_DESC' => 'Latest',
             'date_ASC' => 'Oldest',
@@ -106,8 +119,8 @@ class City_Mapper_Shortcode {
         echo '<select id="city-mapper-sort" onchange="cityMapperSort(this.value)">';
         
         foreach ($options as $value => $label) {
-            list($orderby, $order) = explode('_', $value);
-            $selected = ($orderby === $current_orderby && $order === $current_order) ? ' selected' : '';
+            list($option_orderby, $option_order) = explode('_', $value);
+            $selected = ($option_orderby === $orderby && $option_order === $order) ? ' selected' : '';
             echo "<option value=\"{$value}\"{$selected}>{$label}</option>";
         }
         
@@ -122,7 +135,6 @@ class City_Mapper_Shortcode {
             const url = new URL(window.location);
             url.searchParams.set('orderby', orderby);
             url.searchParams.set('order', order);
-            console.log(url.searchParams); 
             url.searchParams.delete('paged'); // Remove the 'paged' parameter
             window.location.href = url.toString();
         }

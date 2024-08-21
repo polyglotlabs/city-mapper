@@ -74,10 +74,10 @@ class City_Mapper_CPT {
             return;
         }
 
-        // Save sub_category
-        if (isset($_POST['tax_input']['sub_category'])) {
-            $sub_categories = array_map('intval', $_POST['tax_input']['sub_category']);
-            wp_set_object_terms($post_id, $sub_categories, 'sub_category');
-        }
+        // // Save sub_category
+        // if (isset($_POST['tax_input']['sub_category'])) {
+        //     $sub_categories = array_map('intval', $_POST['tax_input']['sub_category']);
+        //     wp_set_object_terms($post_id, $sub_categories, 'sub_category');
+        // }
     }
 }

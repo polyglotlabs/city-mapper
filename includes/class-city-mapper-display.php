@@ -20,6 +20,13 @@ class City_Mapper_Display {
             $output .= '<h2>' . esc_html($main_category) . '</h2>';
             $output .= $this->display_sub_categories_head($main_category);
 
+            if (!$sub_category) {
+                $first_sub_category = $this->get_first_sub_category($main_category);
+                if ($first_sub_category) {
+                    $sub_category = $first_sub_category->slug;
+                }
+            }
+
             if ($sub_category) {
                 $sub_category_term = get_term_by('slug', $sub_category, 'sub_category');
                 if ($sub_category_term) {
@@ -58,7 +65,7 @@ class City_Mapper_Display {
             'paged' => $paged,
         );
 
-        if (!empty($sub_category)) {
+        if (!empty($sub_category)) { // if we're on the sub category page
             $args['tax_query'] = array(
                 array(
                     'taxonomy' => 'sub_category',
@@ -66,6 +73,19 @@ class City_Mapper_Display {
                     'terms' => $sub_category,
                 ),
             );
+        } else {
+              // If no sub_category is specified, get the first sub-category for the main category
+              // this doesn't seem to work right now ZACH 
+              $first_sub_category = $this->get_first_sub_category($category);
+              if ($first_sub_category) {
+                  $args['tax_query'] = array(
+                      array(
+                          'taxonomy' => 'sub_category',
+                          'field' => 'slug',
+                          'terms' => $first_sub_category->slug,
+                      ),
+                  );
+              }
         }
 
         // Add ordering
@@ -144,19 +164,47 @@ class City_Mapper_Display {
         ]);
         $current_sub_category = get_query_var('sub_category');
         $output = '';
+
         if (!empty($sub_categories) && !is_wp_error($sub_categories)) {
             $output .= '<ul class="sub-categories-head">';
+            $first_sub_category = null;
             foreach ($sub_categories as $sub_category) {
                 $main_cat_terms = get_term_meta($sub_category->term_id, 'main_category', true);
                 $main_cat_term = get_term($main_cat_terms);
-                if (!is_wp_error($main_cat_term) && $main_cat_term && $main_cat_term->slug == $main_category) {
-                    $url = home_url("/{$main_category}/{$sub_category->slug}/");
-                    $active_class = ($current_sub_category == $sub_category->slug) ? ' class="active"' : '';
-                    $output .= '<li' . $active_class . '><a href="' . esc_url($url) . '">' . esc_html($sub_category->name) . '</a></li>';
+                 
+
+                if (!is_wp_error($main_cat_term) && $main_cat_term && $main_cat_term->slug == $main_category) {// if we're on the main category page
+                    if ($first_sub_category == null) { // if we haven't set a first sub category yet
+                        $first_sub_category = $sub_category; // set the first sub category
+                    }
+                    $url = home_url("/{$main_category}/{$sub_category->slug}/"); // set the url to the sub category page
+                    $active_class = ($current_sub_category == $sub_category->slug || (!$current_sub_category && $sub_category === $first_sub_category)) ? ' class="active"' : ''; // set the active class
+                    $output .= '<li' . $active_class . '><a href="' . esc_url($url) . '">' . esc_html($sub_category->name) . '</a></li>'; // add the sub category to the output
                 }
             }
             $output .= '</ul>';
         }
         return $output;
+    }
+
+    public function get_first_sub_category($main_category) {
+        $sub_categories = get_terms([
+            'taxonomy' => 'sub_category',
+            'hide_empty' => false,
+            'meta_query' => [
+                [
+                    'key' => 'main_category',
+                    'value' => $main_category,
+                    'compare' => '='
+                ]
+            ]
+                ]); 
+
+
+        if (!empty($sub_categories) && !is_wp_error($sub_categories)) {
+            return $sub_categories[0];
+        }
+
+        return null;
     }
 }
