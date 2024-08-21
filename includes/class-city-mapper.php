@@ -116,9 +116,9 @@ class City_Mapper {
     }
 
     public function add_rewrite_tags() {
-        add_rewrite_tag('%main_category%', '([^&]+)');
-        add_rewrite_tag('%sub_category%', '([^&]+)');
-        add_rewrite_tag('%city_location%', '([^&]+)');
+        // add_rewrite_tag('%main_category%', '([^&]+)');
+        // add_rewrite_tag('%sub_category%', '([^&]+)');
+        // add_rewrite_tag('%city_location%', '([^&]+)');
     }
 
     public function handle_custom_urls($template) {
@@ -172,6 +172,8 @@ class City_Mapper {
         $matched_rule = $wp->matched_rule;
         $matched_query = $wp->matched_query;
         $request = $wp->request;
-
+        // print_r($matched_rule);
+        // print_r($matched_query);
+        // print_r($request);
     }
 }
