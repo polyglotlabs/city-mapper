@@ -6,7 +6,7 @@
  * Version: 0.5.0
  * Requires at least: 6.1.1
  * Requires PHP: 8.0
- * Author: Zachary Dodd
+ * Author: Zachary Dodd, Gerardo Vega
  * Author URI: https://polyglotlabs.com
  * License: All Rights Reserved.
  */
