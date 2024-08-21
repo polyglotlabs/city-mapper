@@ -17,7 +17,7 @@ class City_Mapper_Display {
         $output = '';
 
         if ($main_category) {
-            $output .= '<h2>' . esc_html($main_category) . '</h2>';
+            //$output .= '<h2>' . esc_html($main_category) . '</h2>';
             $output .= $this->display_sub_categories_head($main_category);
 
             if (!$sub_category) {
@@ -47,7 +47,7 @@ class City_Mapper_Display {
         $output = '';
         
         if ($main_category && $sub_category_term) {
-            $output .= '<h2>' . esc_html($main_category) . ' - ' . esc_html($sub_category_term->name) . '</h2>';
+            //$output .= '<h2>' . esc_html($main_category) . ' - ' . esc_html($sub_category_term->name) . '</h2>';
             $output .= $this->display_sub_categories_head($main_category);
 
             $output .= $this->display_posts($main_category, $sub_category, $posts_per_page, $orderby, $order);

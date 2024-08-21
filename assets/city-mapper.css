@@ -33,21 +33,24 @@ body .city-mapper-post h3{
   font-family: "Poppins", Sans-serif;
 }
 
-body .city-mapper-sub-categories{
+body .city-mapper-tabs{
   justify-content: center;
   padding-bottom: 0;
 }
 
-body a.city-mapper-sub-category {
+body a.city-mapper-tab {
   color: #1B365D;
   font-weight: bold;
   background: transparent;
   border-bottom: 2px solid transparent;
   margin: 0px 4%;
 }
-body .city-mapper-sub-category:hover, .city-mapper-sub-category.active {
+body .city-mapper-tab:hover, .city-mapper-tab.active {
   background: transparent;
   border-bottom: 2px solid #893B67;
+  border-left: unset;
+  border-right: unset;
+  border-top: unset;
 }
 
 body .city-mapper-pagination{
