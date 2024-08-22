@@ -15,31 +15,62 @@ class City_Mapper_Display {
         $main_category = get_query_var('main_category') ?: $category;
         $sub_category = get_query_var('sub_category');
         $output = '';
-
+       
+        // echo "<pre>"; 
+        // echo "Main Category"; 
+        // echo $main_category; 
+        // echo "</pre>"; 
         if ($main_category) {
-            //$output .= '<h2>' . esc_html($main_category) . '</h2>';
+            // echo "<pre>"; 
+            // echo "in main cat if condition"; 
+            // echo "</pre>"; 
+            $output .= '<h2>' . esc_html($main_category) . '</h2>';
             $output .= $this->display_sub_categories_head($main_category);
 
             if (!$sub_category) {
                 $first_sub_category = $this->get_first_sub_category($main_category);
+                // echo "<pre>"; 
+                // echo "first sub category"; 
+                // var_dump($first_sub_category); 
+                // echo "</pre>"; 
                 if ($first_sub_category) {
                     $sub_category = $first_sub_category->slug;
+                    // echo "<pre>"; 
+                    // echo "sub category"; 
+                    // var_dump($sub_category); 
+                    // echo "</pre>"; 
                 }
-            }
+                // echo "<pre>"; 
+                // echo "in first sub cat if condition"; 
+                // echo "</pre>"; 
 
-            if ($sub_category) {
-                $sub_category_term = get_term_by('slug', $sub_category, 'sub_category');
-                if ($sub_category_term) {
-                    $output .= '<h3>' . esc_html($sub_category_term->name) . '</h3>';
+                if (!empty($sub_category)) {
+                    $sub_category_term = get_term_by('slug', $sub_category, 'sub_category');
+                    if ($sub_category_term) {
+                        $output .= '<h3>' . esc_html($sub_category_term->name) . '</h3>';
+                    }
+                    // echo "<pre>"; 
+                    // echo "in sub cat if condition"; 
+                    // echo "</pre>"; 
+                    $output .= $this->display_posts($main_category, $sub_category, $posts_per_page, $orderby, $order);
+                } else {
+                    // echo "<pre>"; 
+                    // echo "in sub cat else condition"; 
+                    // echo "</pre>"; 
+                    // echo "sub category";
+                    // var_dump($sub_category); 
+                    // echo "</pre>"; 
+                    $output .= $this->display_posts($main_category, $sub_category, $posts_per_page, $orderby, $order);
                 }
-                $output .= $this->display_posts($main_category, $sub_category, $posts_per_page, $orderby, $order);
-            } else {
-                $output .= $this->display_posts($main_category, '', $posts_per_page, $orderby, $order);
-            }
+            }            
+        } else { 
+            // echo "<pre>"; 
+            // echo "in else condition"; 
+            // echo "</pre>"; 
         }
 
         echo $output;
-    }
+    } 
 
     public function display_sub_category($category, $sub_category, $posts_per_page, $orderby, $order) {
         $main_category = get_query_var('main_category') ?: $category;
@@ -47,7 +78,7 @@ class City_Mapper_Display {
         $output = '';
         
         if ($main_category && $sub_category_term) {
-            //$output .= '<h2>' . esc_html($main_category) . ' - ' . esc_html($sub_category_term->name) . '</h2>';
+            $output .= '<h2>' . esc_html($main_category) . ' - ' . esc_html($sub_category_term->name) . '</h2>';
             $output .= $this->display_sub_categories_head($main_category);
 
             $output .= $this->display_posts($main_category, $sub_category, $posts_per_page, $orderby, $order);
@@ -73,10 +104,16 @@ class City_Mapper_Display {
                     'terms' => $sub_category,
                 ),
             );
+           
         } else {
+            // echo "<pre>"; 
+            // var_dump($category); 
+            // echo "</pre>"; 
               // If no sub_category is specified, get the first sub-category for the main category
               // this doesn't seem to work right now ZACH 
+              
               $first_sub_category = $this->get_first_sub_category($category);
+            //   var_dump($first_sub_category);
               if ($first_sub_category) {
                   $args['tax_query'] = array(
                       array(
@@ -187,24 +224,40 @@ class City_Mapper_Display {
         return $output;
     }
 
-    public function get_first_sub_category($main_category) {
-        $sub_categories = get_terms([
-            'taxonomy' => 'sub_category',
-            'hide_empty' => false,
-            'meta_query' => [
-                [
-                    'key' => 'main_category',
-                    'value' => $main_category,
-                    'compare' => '='
-                ]
-            ]
-                ]); 
+    private function get_first_sub_category($main_category) {
+        global $wpdb;
 
+        $first_term_query = $wpdb->prepare(
+            "SELECT t.term_id, t.name, t.slug
+            FROM {$wpdb->terms} t
+            JOIN {$wpdb->term_taxonomy} tt ON t.term_id = tt.term_id
+            JOIN {$wpdb->termmeta} tm ON t.term_id = tm.term_id
+            WHERE tt.taxonomy = 'sub_category'
+            AND tm.meta_key = 'main_category'
+            AND tm.meta_value = (
+                SELECT ID
+                FROM {$wpdb->posts}
+                WHERE post_type = 'page' AND post_name = %s
+                LIMIT 1
+            )
+            ORDER BY t.name ASC
+            LIMIT 1",
+            $main_category
+        );
+        // $first_sub_category = $wpdb->get_row($first_term_query);
+        $first_sub_category = $wpdb->get_row($first_term_query);
 
-        if (!empty($sub_categories) && !is_wp_error($sub_categories)) {
-            return $sub_categories[0];
+        
+        if ($first_sub_category) {
+            return (object) array(
+                'term_id' => $first_sub_category->term_id,
+                'name' => $first_sub_category->name,
+                'slug' => $first_sub_category->slug
+            );
         }
 
-        return null;
+   
     }
 }
+
+
