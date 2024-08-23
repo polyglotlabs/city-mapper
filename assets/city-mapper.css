@@ -21,7 +21,7 @@ body .city-mapper-thumbnail img{
 }
 
 body .city-mapper-posts{
-  grid-template-columns: auto auto auto;
+  grid-template-columns: 32.5% 32.5% 32.5%;
   gap: 40px 20px;
 }
 .city-mapper--sub-categories{

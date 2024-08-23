@@ -78,7 +78,7 @@ class City_Mapper_Display {
         $output = '';
         
         if ($main_category && $sub_category_term) {
-            $output .= '<h2>' . esc_html($main_category) . ' - ' . esc_html($sub_category_term->name) . '</h2>';
+            //$output .= '<h2>' . esc_html($main_category) . ' - ' . esc_html($sub_category_term->name) . '</h2>';
             $output .= $this->display_sub_categories_head($main_category);
 
             $output .= $this->display_posts($main_category, $sub_category, $posts_per_page, $orderby, $order);
@@ -149,9 +149,14 @@ class City_Mapper_Display {
 
             $output .= '<div class="city-mapper-posts">';
             while ($query->have_posts()) {
+                if(get_field('website')){
+                    $post_link = get_field('website');
+                }else{
+                    $post_link = get_permalink();
+                }
                 $query->the_post();
                 $output .= '<div class="city-mapper-post">';
-                $output .= '<a href="' . esc_url(get_permalink()) . '">';
+                $output .= '<a href="' . esc_url($post_link) . '" target="_blank">';
                 if (has_post_thumbnail()) {
                     $output .= '<div class="city-mapper-thumbnail">';
                     $output .= get_the_post_thumbnail(null, 'full');
