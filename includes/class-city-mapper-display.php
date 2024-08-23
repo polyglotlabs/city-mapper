@@ -149,12 +149,14 @@ class City_Mapper_Display {
 
             $output .= '<div class="city-mapper-posts">';
             while ($query->have_posts()) {
+                $query->the_post();
+                
                 if(get_field('website')){
                     $post_link = get_field('website');
                 }else{
                     $post_link = get_permalink();
                 }
-                $query->the_post();
+                
                 $output .= '<div class="city-mapper-post">';
                 $output .= '<a href="' . esc_url($post_link) . '" target="_blank">';
                 if (has_post_thumbnail()) {
