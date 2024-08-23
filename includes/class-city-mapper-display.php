@@ -24,7 +24,7 @@ class City_Mapper_Display {
             // echo "<pre>"; 
             // echo "in main cat if condition"; 
             // echo "</pre>"; 
-            $output .= '<h2>' . esc_html($main_category) . '</h2>';
+            //output .= '<h2>' . esc_html($main_category) . '</h2>';
             $output .= $this->display_sub_categories_head($main_category);
 
             if (!$sub_category) {
@@ -47,7 +47,7 @@ class City_Mapper_Display {
                 if (!empty($sub_category)) {
                     $sub_category_term = get_term_by('slug', $sub_category, 'sub_category');
                     if ($sub_category_term) {
-                        $output .= '<h3>' . esc_html($sub_category_term->name) . '</h3>';
+                        //$output .= '<h3>' . esc_html($sub_category_term->name) . '</h3>';
                     }
                     // echo "<pre>"; 
                     // echo "in sub cat if condition"; 
@@ -221,10 +221,10 @@ class City_Mapper_Display {
             }
             $output .= '</ul>';
         }
-        return $output;
+        //return $output;
     }
 
-    private function get_first_sub_category($main_category) {
+    public function get_first_sub_category($main_category) {
         global $wpdb;
 
         $first_term_query = $wpdb->prepare(

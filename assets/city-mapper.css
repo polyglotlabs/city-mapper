@@ -88,7 +88,6 @@ body .city-mapper-pagination{
 }
 
 .city-mapper-sorting {
-    margin-bottom: 20px;
     text-align: right;
 }
 
@@ -102,6 +101,92 @@ body .city-mapper-pagination{
     border: 1px solid #ddd;
 }
 
+body a.city-mapper-map{
+  background-color: #893B67;
+  color: white;
+  font-weight: 500;
+  padding: 9px 22px;
+  align-items: center;
+  display: flex;
+  max-width: 172px;
+  justify-content: center;
+  border: 1px solid #893B67;
+  border-radius: 8px;
+  transition: all .2s ease-out;
+  width: 100%;
+  margin-left: auto;
+}
+body a.city-mapper-map svg{
+  fill: white;
+  max-width: 20px;
+  margin-right: 5px;
+}
+body a.city-mapper-map:hover{
+  color: #893B67;
+  background-color: white;
+}
+body a.city-mapper-map:hover svg{
+  fill: #893B67;
+}
+.city-mapper-container--top-bar{
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+  max-width: 100%;
+  align-items: center;
+  margin: 48px 0;
+}
+.category-showing{
+  margin-right: 32px;
+}
+#city-mapper-sort{
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+.select{
+  border: 1px solid #ccc;
+  overflow: hidden; 
+  height: 48px;    
+  width: 220px;
+  position: relative;
+  display: block;
+}
+#city-mapper-sort{
+  height: 48px;
+  padding: 5px;
+  border: 0;
+  font-size: 16px;       
+  width: 220px;
+  font-size: 18px;
+    margin-left: 10px;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  outline: none;
+  color: #5e5650;
+  font-size: 18px;
+  margin-left: 10px;
+}
+.select:after{
+  content:"\f062";
+  font-family: "Font Awesome 5 Free";
+  color: #FF9426;
+  padding: 12px 8px;
+  position: absolute; 
+  right: 26px;
+  top: 0;
+  z-index: 1;
+  text-align: center;
+  width: 10%;
+  height: 100%;      
+  pointer-events: none;
+  box-sizing: border-box;  
+  transition: all .2s ease-out;
+}
+.select:focus-within:after{
+  transform: rotate(180deg);
+}
 @media screen and (max-width: 1024px){
   body .city-mapper-posts {
     grid-template-columns: auto auto;
@@ -114,5 +199,15 @@ body .city-mapper-pagination{
 @media screen and (max-width: 767px){
   body .city-mapper-posts {
     grid-template-columns: auto;
+  }
+  body a.city-mapper-map{
+    margin: 21px auto 0 auto;
+    
+  }
+  .city-mapper-container--top-bar{
+    justify-content: center;
+  }
+  .category-showing, .city-mapper-sorting{
+    margin-top: 21px;
   }
 }
