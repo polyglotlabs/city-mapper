@@ -13,7 +13,7 @@ class City_Mapper_Shortcode {
         $atts = shortcode_atts([
             'category' => '',
             'sub_category' => '',
-            'posts_per_page' => 9,
+            'posts_per_page' => 21,
             'orderby' => 'date',
             'order' => 'DESC'
         ], $atts, 'city_mapper');
@@ -120,7 +120,7 @@ class City_Mapper_Shortcode {
             $first_cat = $this->display->get_first_sub_category($main_category)->slug;
             $args = array(
               'post_type' => 'city_location', 
-              'showposts' => '9',
+              'showposts' => '21',
               'paged' => $paged,  
             );
             if($current_sub_category == ''){
