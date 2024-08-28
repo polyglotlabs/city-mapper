@@ -43,7 +43,7 @@ body a.city-mapper-tab {
   font-weight: bold;
   background: transparent;
   border-bottom: 2px solid transparent;
-  margin: 0px 4%;
+  margin: 0px 2%;
 }
 body .city-mapper-tab:hover, .city-mapper-tab.active {
   background: transparent;
